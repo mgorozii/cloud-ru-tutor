@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+
+# Project specific
+data/chroma_db/
+# чтобы не каждому парсить заново, храним их в репозитории
+# cloud_ru_docs.json
+# documents.db
+.streamlit/secrets.toml
+.env
+*.log
