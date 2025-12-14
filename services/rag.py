@@ -25,11 +25,11 @@ class RAG:
     ) -> str:
         context = "\n\n".join(
             [
-                f"Источник: {doc['metadata']['source_title']}\n{doc['text']}"
+                f"Источник: {doc['metadata'].get('title', 'Без названия')}\n{doc['text']}"
                 for doc in documents
             ]
         )
-
+        context = context[:4000]
         model_to_use = model_name or self.model_name
 
         system_prompt = """Ты репетитор по Cloud.ru. Помогаешь разбираться в облачных сервисах.
