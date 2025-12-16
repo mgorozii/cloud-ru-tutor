@@ -54,7 +54,9 @@ class RAG:
 
             if "429" in error_str or "quota" in error_str.lower():
                 if "limit: 0" in error_str:
-                    return f"Модель {model_to_use} недоступна. Попробуй gemini-1.5-flash."
+                    return (
+                        f"Модель {model_to_use} недоступна. Попробуй gemini-1.5-flash."
+                    )
                 return "Лимит API исчерпан. Подожди немного."
 
             log.error("generation_failed", model=model_to_use, error=error_str[:200])

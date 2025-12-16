@@ -30,7 +30,7 @@ class Crawler:
             for tag in soup(["script", "style", "nav", "footer"]):
                 tag.decompose()
 
-            text = soup.get_text(separator="\n") 
+            text = soup.get_text(separator="\n")
             lines = (line.strip() for line in text.splitlines())
             text = "\n".join(line for line in lines if line)
             return text if len(text) > 100 else None
