@@ -11,7 +11,7 @@ JSON_OUTPUT = DATA_DIR / "cloud_ru_docs.json"
 EMBEDDING_MODEL = "cointegrated/rubert-tiny2"
 EMBEDDING_DIM = 384
 
-LLM_MODEL = "gemini-2.5-flash"
+LLM_MODEL = "models/gemini-flash-lite-latest"
 
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
