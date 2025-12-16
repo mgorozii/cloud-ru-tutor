@@ -46,7 +46,7 @@ class RAG:
             model = genai.GenerativeModel(model_to_use)
             response = model.generate_content(
                 [system_prompt, user_message],
-                generation_config={"max_output_tokens": 1000, "temperature": 0.7},
+                generation_config={"max_output_tokens": 5000, "temperature": 0.7},
             )
             return response.text
         except Exception as e:

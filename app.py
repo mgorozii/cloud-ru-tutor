@@ -128,7 +128,7 @@ def main():
         try:
             count = collection.count()
             st.metric("Чанков в БД", count)
-        except:
+        except Exception:
             st.metric("Чанков в БД", "N/A")
 
         st.metric("Размер вектора", embeddings.embedding_dim)
