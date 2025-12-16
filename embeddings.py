@@ -17,5 +17,6 @@ def main():
 
     log.info("indexing_completed", count=collection.count())
 
+
 if __name__ == "__main__":
     main()

@@ -7,26 +7,28 @@ from services import EmbeddingsService, RAG, Storage, Crawler
 
 st.set_page_config(page_title="Cloud.ru Tutor", layout="wide")
 
+
 def check_and_create_data():
     if not DATABASE_FILE.exists():
         st.warning("База данных не найдена. Создаем...")
-        
+
         with st.spinner("Собираем данные с Cloud.ru..."):
             crawler = Crawler()
             documents = crawler.crawl(SEED_URLS, max_pages=100)
-            
+
             storage = Storage(DATABASE_FILE)
             storage.save_json(documents, JSON_OUTPUT)
             storage.save_chunks(documents)
-        
+
         st.success(f"Собрано {len(documents)} документов")
         return True
-    
+
     if DATABASE_FILE.stat().st_size == 0:
         st.error("База данных пуста. Удалите файл и перезапустите приложение.")
         return False
-    
+
     return True
+
 
 @st.cache_resource
 def init_services():
@@ -34,14 +36,14 @@ def init_services():
     if not api_key:
         st.error("GEMINI_API_KEY не найден.")
         st.stop()
-    
+
     if not check_and_create_data():
         st.stop()
-    
+
     try:
         embeddings = EmbeddingsService()
         collection = embeddings.load_chroma(force_recreate=True)
-        
+
         if collection.count() == 0:
             with st.spinner("Индексируем документы..."):
                 storage = Storage(DATABASE_FILE)
@@ -52,22 +54,23 @@ def init_services():
                 else:
                     st.error("Нет данных для индексации")
                     st.stop()
-        
+
         rag = RAG(api_key)
         storage = Storage(DATABASE_FILE)
-        
+
         return embeddings, collection, rag, storage
-        
+
     except Exception as e:
         st.error(f"Ошибка инициализации: {str(e)}")
         st.stop()
 
+
 def generate_quiz(rag, topic: str, context_docs: list):
     if not topic:
         return "Введите тему для создания вопросов"
-    
+
     context = "\n\n".join([doc["text"] for doc in context_docs[:3]])
-    
+
     prompt = f"""
     Создай 3 вопроса для самопроверки по теме: {topic}
     
@@ -99,23 +102,27 @@ def generate_quiz(rag, topic: str, context_docs: list):
        Ответ: [буква правильного ответа]
        Объяснение: [краткое объяснение]
     """
-    
+
     try:
         response = rag.generate(prompt, [])
         return response
     except Exception as e:
         return f"Ошибка генерации вопросов: {str(e)}"
 
+
 def main():
-    st.markdown("<h1 style='text-align: center;'>Cloud.ru AI-Репетитор</h1>", unsafe_allow_html=True)
-    
+    st.markdown(
+        "<h1 style='text-align: center;'>Cloud.ru AI-Репетитор</h1>",
+        unsafe_allow_html=True,
+    )
+
     embeddings, collection, rag, storage = init_services()
-    
+
     with st.sidebar:
         st.header("Настройки")
         top_k = st.slider("Количество источников", 3, 15, 5)
         show_sources = st.checkbox("Показывать источники", value=True)
-        
+
         st.divider()
         st.subheader("Статистика")
         try:
@@ -123,16 +130,16 @@ def main():
             st.metric("Чанков в БД", count)
         except:
             st.metric("Чанков в БД", "N/A")
-        
+
         st.metric("Размер вектора", embeddings.embedding_dim)
         st.metric("LLM модель", LLM_MODEL)
-    
+
     tab1, tab2 = st.tabs(["Чат", "Самопроверка"])
-    
+
     with tab1:
         if "messages" not in st.session_state:
             st.session_state.messages = []
-        
+
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
@@ -141,17 +148,17 @@ def main():
                         for src in msg["sources"]:
                             if src.get("url") and src.get("title"):
                                 st.markdown(f"[{src['title']}]({src['url']})")
-        
+
         if user_input := st.chat_input("Задайте вопрос о Cloud.ru..."):
             st.session_state.messages.append({"role": "user", "content": user_input})
-            
+
             with st.chat_message("user"):
                 st.markdown(user_input)
-            
+
             with st.chat_message("assistant"):
                 with st.spinner("Поиск информации..."):
                     search_results = embeddings.search(user_input, collection, top_k)
-                
+
                 if not search_results:
                     st.warning("По вашему запросу ничего не найдено.")
                     response = "Не нашел информации по вашему вопросу. Попробуйте переформулировать."
@@ -160,51 +167,59 @@ def main():
                     with st.spinner("Генерация ответа..."):
                         top_docs = rag.rerank(search_results, 3)
                         response = rag.generate(user_input, top_docs)
-                    
+
                     st.markdown(response)
-                    
+
                     if show_sources and top_docs:
                         with st.expander("Источники информации"):
                             for i, doc in enumerate(top_docs, 1):
                                 src_info = storage.get_source_info(doc["id"])
                                 if src_info and src_info.get("url"):
-                                    st.markdown(f"{i}. [{src_info.get('title', 'Без названия')}]({src_info['url']})")
+                                    st.markdown(
+                                        f"{i}. [{src_info.get('title', 'Без названия')}]({src_info['url']})"
+                                    )
                                 elif doc.get("metadata") and doc["metadata"].get("url"):
-                                    st.markdown(f"{i}. [{doc['metadata'].get('title', 'Без названия')}]({doc['metadata']['url']})")
-                
+                                    st.markdown(
+                                        f"{i}. [{doc['metadata'].get('title', 'Без названия')}]({doc['metadata']['url']})"
+                                    )
+
                 sources = []
                 for doc in top_docs:
                     src_info = storage.get_source_info(doc["id"])
                     if src_info and src_info.get("url"):
-                        sources.append({
-                            "title": src_info.get("title", "Без названия"),
-                            "url": src_info["url"]
-                        })
+                        sources.append(
+                            {
+                                "title": src_info.get("title", "Без названия"),
+                                "url": src_info["url"],
+                            }
+                        )
                     elif doc.get("metadata") and doc["metadata"].get("url"):
-                        sources.append({
-                            "title": doc["metadata"].get("title", "Без названия"),
-                            "url": doc["metadata"]["url"]
-                        })
-                
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "content": response,
-                    "sources": sources
-                })
-                
+                        sources.append(
+                            {
+                                "title": doc["metadata"].get("title", "Без названия"),
+                                "url": doc["metadata"]["url"],
+                            }
+                        )
+
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": response, "sources": sources}
+                )
+
                 st.session_state.last_user_question = user_input
-    
+
     with tab2:
         st.subheader("Создание вопросов для самопроверки")
-        
+
         last_question = st.session_state.get("last_user_question", "")
-        
+
         if last_question:
             st.write(f"Последний вопрос в чате: {last_question}")
-            topic = st.text_input("Тема для вопросов (или оставьте предыдущий):", value=last_question)
+            topic = st.text_input(
+                "Тема для вопросов (или оставьте предыдущий):", value=last_question
+            )
         else:
             topic = st.text_input("Введите тему для создания вопросов:")
-        
+
         if st.button("Создать вопросы для самопроверки"):
             if not topic:
                 st.error("Введите тему для создания вопросов")
@@ -216,7 +231,10 @@ def main():
                         quiz = generate_quiz(rag, topic, top_docs)
                         st.markdown(quiz)
                     else:
-                        st.warning("Не найдено информации по теме. Попробуйте другую тему.")
+                        st.warning(
+                            "Не найдено информации по теме. Попробуйте другую тему."
+                        )
+
 
 if __name__ == "__main__":
     main()
