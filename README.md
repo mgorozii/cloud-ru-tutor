@@ -35,14 +35,12 @@ cloud-ru-tutor/
 # Установка
 uv sync
 
-# Парсинг документации
+# Парсинг документации (опционально, если нет готового файла в data/cloud_ru_docs.json)
 uv run python crawl.py
-
-# Создание индекса
-uv run python embeddings.py
 
 # Запуск интерфейса
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
-# Добавьте ваш GEMINI_API_KEY в .streamlit/secrets.toml
+# И добавьте ваш GEMINI_API_KEY в .streamlit/secrets.toml
+
 uv run streamlit run app.py
 ```

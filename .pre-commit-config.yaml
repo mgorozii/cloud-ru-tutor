@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: .venv/bin/ruff
+        language: system
+        types_or: [python]
+        args: ["format"]
+      - id: ruff-check
+        name: ruff check --fix
+        entry: .venv/bin/ruff
+        language: system
+        types_or: [python]
+        args: ["check", "--fix"]
