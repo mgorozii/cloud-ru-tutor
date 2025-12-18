@@ -18,10 +18,11 @@ venv/
 .DS_Store
 
 # Project specific
-data/chroma_db/
 # чтобы не каждому парсить заново, храним их в репозитории
-# cloud_ru_docs.json
-# documents.db
+!data/documents.json
+!data/documents.db
+data/
+
 .streamlit/secrets.toml
 .env
 *.log

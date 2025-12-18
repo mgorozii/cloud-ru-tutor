@@ -1,33 +1,11 @@
 #!/usr/bin/env python3
 import os
 import streamlit as st
-from core import DATABASE_FILE, JSON_OUTPUT
-from core.config import LLM_MODEL, SEED_URLS
-from services import EmbeddingsService, RAG, Storage, Crawler
+from core import DATABASE_FILE
+from core.config import LLM_MODEL
+from services import EmbeddingsService, RAG, Storage
 
 st.set_page_config(page_title="Cloud.ru Tutor", layout="wide")
-
-
-def check_and_create_data():
-    if not DATABASE_FILE.exists():
-        st.warning("База данных не найдена. Создаем...")
-
-        with st.spinner("Собираем данные с Cloud.ru..."):
-            crawler = Crawler()
-            documents = crawler.crawl(SEED_URLS, max_pages=100)
-
-            storage = Storage(DATABASE_FILE)
-            storage.save_json(documents, JSON_OUTPUT)
-            storage.save_chunks(documents)
-
-        st.success(f"Собрано {len(documents)} документов")
-        return True
-
-    if DATABASE_FILE.stat().st_size == 0:
-        st.error("База данных пуста. Удалите файл и перезапустите приложение.")
-        return False
-
-    return True
 
 
 @st.cache_resource
@@ -37,12 +15,9 @@ def init_services():
         st.error("GEMINI_API_KEY не найден.")
         st.stop()
 
-    if not check_and_create_data():
-        st.stop()
-
     try:
         embeddings = EmbeddingsService()
-        collection = embeddings.load_chroma(force_recreate=True)
+        collection = embeddings.load_chroma()
 
         if collection.count() == 0:
             with st.spinner("Индексируем документы..."):
