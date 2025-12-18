@@ -9,7 +9,7 @@ def main():
     log.info("crawl_started")
 
     crawler = Crawler()
-    documents = crawler.crawl(SEED_URLS, max_pages=500)
+    documents = crawler.crawl(SEED_URLS, max_pages=None)
 
     storage = Storage(DATABASE_FILE)
     storage.save_json(documents, JSON_OUTPUT)

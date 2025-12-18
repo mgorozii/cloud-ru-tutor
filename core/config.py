@@ -6,27 +6,18 @@ DATA_DIR.mkdir(exist_ok=True)
 
 DATABASE_FILE = DATA_DIR / "documents.db"
 CHROMA_DB_DIR = DATA_DIR / "chroma_db"
-JSON_OUTPUT = DATA_DIR / "cloud_ru_docs.json"
+JSON_OUTPUT = DATA_DIR / "documents.json"
 
 EMBEDDING_MODEL = "cointegrated/rubert-tiny2"
 EMBEDDING_DIM = 384
 
-LLM_MODEL = "models/gemini-flash-lite-latest"
+LLM_MODEL = "models/gemini-3-flash-preview"
 
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
 
 SEED_URLS = [
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__compute",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__network",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__containers",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__storage",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__brokers",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__database",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__dataplatform",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__ai-factory",
-    "https://cloud.ru/docs/tutorials-evolution/list/topics/index__monitoring-management",
-    "https://cloud.ru/docs/tutorials-evolution/list/index?source-platform=Evolution",
+    "https://cloud.ru/docs",
 ]
 
 HEADERS = {
