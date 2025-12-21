@@ -15,6 +15,7 @@ dependencies = [
     "streamlit>=1.52.1",
     "structlog>=25.5.0",
     "watchdog>=6.0.0",
+    "badwords",
 ]
 
 [dependency-groups]
@@ -22,3 +23,6 @@ dev = [
     "pre-commit>=4.5.0",
     "ruff>=0.14.9",
 ]
+
+[tool.uv.sources]
+badwords = { git = "https://github.com/FlacSy/badwords.git" }

@@ -2,6 +2,8 @@
 
 RAG-система для обучения по документации Cloud.ru
 
+📄 [Отчёт о проекте](REPORT.md)
+
 ## Структура
 
 ```
@@ -29,7 +31,7 @@ cloud-ru-tutor/
 
 ## Быстрый старт
 
-Для работы понадобится Python 3.11+ и [uv](https://docs.astral.sh/uv/).
+Для работы понадобится Python 3.11+, [uv](https://docs.astral.sh/uv/) и [GEMINI_API_KEY](https://aistudio.google.com/app/api-keys).
 
 ```bash
 # Установка
@@ -42,8 +44,7 @@ uv run python crawl.py
 uv run python embeddings.py
 
 # Запуск интерфейса
+# Добавьте ваш GEMINI_API_KEY в .streamlit/secrets.toml
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
-# И добавьте ваш GEMINI_API_KEY в .streamlit/secrets.toml
-
 uv run streamlit run app.py
 ```

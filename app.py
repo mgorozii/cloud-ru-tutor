@@ -4,6 +4,7 @@ import streamlit as st
 from core import DATABASE_FILE
 from core.config import LLM_MODEL
 from services import EmbeddingsService, RAG, Storage
+from services.moderation import ContentModerator
 
 st.set_page_config(page_title="Cloud.ru Tutor", layout="wide")
 
@@ -32,8 +33,9 @@ def init_services():
 
         rag = RAG(api_key)
         storage = Storage(DATABASE_FILE)
+        moderator = ContentModerator()
 
-        return embeddings, collection, rag, storage
+        return embeddings, collection, rag, storage, moderator
 
     except Exception as e:
         st.error(f"Ошибка инициализации: {str(e)}")
@@ -142,7 +144,7 @@ def main():
         unsafe_allow_html=True,
     )
 
-    embeddings, collection, rag, storage = init_services()
+    embeddings, collection, rag, storage, moderator = init_services()
 
     with st.sidebar:
         st.header("Настройки")
@@ -200,13 +202,19 @@ def main():
 
         # on submit: show user bubble immediately, set generating state, rerun to disable input
         if user_input:
-            st.session_state.messages.append({"role": "user", "content": user_input})
-            with st.chat_message("user"):
-                st.markdown(user_input)
-            st.session_state.last_user_question = user_input
-            st.session_state.pending_question = user_input
-            st.session_state.is_generating = True
-            st.rerun()
+            allowed, filtered = moderator.filter_input(user_input)
+            if not allowed:
+                st.warning(filtered)
+            else:
+                st.session_state.messages.append(
+                    {"role": "user", "content": user_input}
+                )
+                with st.chat_message("user"):
+                    st.markdown(user_input)
+                st.session_state.last_user_question = user_input
+                st.session_state.pending_question = user_input
+                st.session_state.is_generating = True
+                st.rerun()
 
         # generation phase: run when is_generating and pending_question set
         if st.session_state.is_generating and st.session_state.pending_question:
@@ -223,7 +231,9 @@ def main():
                 with st.spinner("Генерация ответа..."):
                     top_docs = rag.rerank(question, search_results, top_k)
                     context_docs = expand_context(storage, top_docs, neighbor_count=1)
-                    response = rag.generate(question, context_docs)
+                    response = moderator.filter_response(
+                        rag.generate(question, context_docs)
+                    )
 
             sources = []
             for doc in top_docs:
