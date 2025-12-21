@@ -38,7 +38,7 @@ uv sync
 # Парсинг документации (опционально)
 uv run python crawl.py
 
-# Создание эмбедингов
+# Создание эмбедингов (создает SQLite + ChromaDB)
 uv run python embeddings.py
 
 # Запуск интерфейса

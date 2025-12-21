@@ -12,8 +12,10 @@ EMBEDDING_MODEL = "cointegrated/rubert-tiny2"
 EMBEDDING_DIM = 384
 
 LLM_MODEL = "models/gemini-3-flash-preview"
+LLM_MODEL = "models/gemma-3-27b-it"
+LLM_RERANK_MODEL = "models/gemma-3-27b-it"
 
-CHUNK_SIZE = 500
+CHUNK_SIZE = 512
 CHUNK_OVERLAP = 100
 
 SEED_URLS = [

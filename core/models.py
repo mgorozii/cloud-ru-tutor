@@ -13,6 +13,7 @@ class Chunk:
     id: str
     source_url: str
     source_title: str
+    chunk_index: int
     text: str
 
 

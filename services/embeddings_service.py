@@ -1,4 +1,3 @@
-import hashlib
 import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
@@ -85,14 +84,7 @@ class EmbeddingsService:
         metadatas = []
 
         for i, chunk in enumerate(chunks):
-            # Создаем уникальный ID
-            if len(chunk.text) < 300:
-                continue
-
-            chunk_hash = hashlib.md5(chunk.text.encode()).hexdigest()[:16]
-            chunk_id = f"chunk_{i}_{chunk_hash}"
-
-            ids.append(chunk_id)
+            ids.append(chunk.id)
             texts.append(chunk.text)
             metadatas.append(
                 {
@@ -136,7 +128,6 @@ class EmbeddingsService:
         """Поиск с обработкой ошибок"""
         try:
             query_embedding = self.model.encode(query)
-            query = query + " kubernetes кластер сервис подключение"
             results = collection.query(
                 query_embeddings=[query_embedding.tolist()],
                 n_results=top_k,

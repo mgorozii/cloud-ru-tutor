@@ -13,7 +13,6 @@ def main():
 
     storage = Storage(DATABASE_FILE)
     storage.save_json(documents, JSON_OUTPUT)
-    storage.save_chunks(documents)
 
     log.info("pipeline_completed", docs=len(documents), failed=len(crawler.failed))
 
