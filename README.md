@@ -19,7 +19,7 @@ cloud-ru-tutor/
 │
 ├── data/              # все БД и файлы
 │   ├── documents.db
-│   ├── cloud_ru_docs.json
+│   ├── documents.json
 │   └── chroma_db/
 │
 ├── app.py             # UI (Streamlit)
@@ -35,8 +35,11 @@ cloud-ru-tutor/
 # Установка
 uv sync
 
-# Парсинг документации (опционально, если нет готового файла в data/cloud_ru_docs.json)
+# Парсинг документации (опционально)
 uv run python crawl.py
+
+# Создание эмбедингов
+uv run python embeddings.py
 
 # Запуск интерфейса
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
