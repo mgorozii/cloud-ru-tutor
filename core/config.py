@@ -13,8 +13,8 @@ EMBEDDING_DIM = 384
 
 LLM_MODEL = "models/gemini-3-flash-preview"
 
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 100
+CHUNK_SIZE = 850
+CHUNK_OVERLAP = 140
 
 SEED_URLS = [
     "https://cloud.ru/docs",
