@@ -12,6 +12,17 @@ EMBEDDING_MODEL = "cointegrated/rubert-tiny2"
 EMBEDDING_DIM = 384
 
 LLM_MODEL = "models/gemini-3-flash-preview"
+LLM_MODEL_QWEN = "qwen2.5:7b"  # тег модели в Ollama
+
+# Базовый URL для Ollama (по умолчанию так)
+OLLAMA_BASE_URL = "http://localhost:11434"
+
+# Defolt - оставляем Gemini, чтобы ничего не сломать)
+LLM_DEFAULT_PROVIDER = LLM_PROVIDER_GEMINI
+LLM_DEFAULT_MODEL = LLM_MODEL_GEMINI
+
+# Для обратной совместимости с текущим RAG (пока он импортирует LLM_MODEL)
+LLM_MODEL = LLM_DEFAULT_MODEL
 
 CHUNK_SIZE = 850
 CHUNK_OVERLAP = 140

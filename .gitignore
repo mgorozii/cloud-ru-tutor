@@ -19,9 +19,10 @@ venv/
 
 # Project specific
 # чтобы не каждому парсить заново, храним их в репозитории
+data/*
 !data/documents.json
 !data/documents.db
-data/
+!data/
 
 .streamlit/secrets.toml
 .env
