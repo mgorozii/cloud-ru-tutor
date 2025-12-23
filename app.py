@@ -2,7 +2,13 @@
 import os
 import streamlit as st
 from core import DATABASE_FILE
-from core.config import LLM_MODEL
+from core.config import (
+    LLM_MODEL,
+    LLM_PROVIDER_GEMINI, 
+    LLM_PROVIDER_QWEN,
+    LLM_MODEL_GEMINI,
+    LLM_MODEL_QWEN
+)
 from services import EmbeddingsService, RAG, Storage
 
 st.set_page_config(page_title="Cloud.ru Tutor", layout="wide")
@@ -79,7 +85,7 @@ def generate_quiz(rag, topic: str, context_docs: list):
     """
 
     try:
-        response = rag.generate(prompt, [])
+        response = rag.generate(prompt, [], model_name=st.session_state.llm_model, provider=st.session_state.llm_provider)
         return response
     except Exception as e:
         return f"Ошибка генерации вопросов: {str(e)}"
@@ -92,6 +98,12 @@ def main():
     )
 
     embeddings, collection, rag, storage = init_services()
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "llm_provider" not in st.session_state:
+        st.session_state.llm_provider = LLM_PROVIDER_GEMINI
+    if "llm_model" not in st.session_state:
+        st.session_state.llm_model = LLM_MODEL_GEMINI
 
     with st.sidebar:
         st.header("Настройки")
@@ -109,11 +121,32 @@ def main():
         st.metric("Размер вектора", embeddings.embedding_dim)
         st.metric("LLM модель", LLM_MODEL)
 
+        # === Выбор провайдера и модели ===
+        st.divider()
+        st.subheader("⚙️ Выбор LLM")
+    
+        provider = st.selectbox(
+            "Провайдер",
+            [LLM_PROVIDER_GEMINI, LLM_PROVIDER_QWEN],
+            index=0 if st.session_state.llm_provider == LLM_PROVIDER_GEMINI else 1
+        )
+    
+        if provider == LLM_PROVIDER_GEMINI:
+            model_options = [LLM_MODEL_GEMINI, "models/gemini-1.5-flash"]
+        else:  # Qwen
+            model_options = [LLM_MODEL_QWEN, "qwen2.5:3b", "qwen2.5:1.5b"]
+    
+        selected_model = st.selectbox("Модель", model_options, index=0)
+    
+        # Сохраняем выбор
+        st.session_state.llm_provider = provider
+        st.session_state.llm_model = selected_model
+
     tab1, tab2 = st.tabs(["Чат", "Самопроверка"])
 
     with tab1:
         if "messages" not in st.session_state:
-            st.session_state.messages = []
+            st.session_state.messages = [] 
 
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
@@ -141,7 +174,8 @@ def main():
                 else:
                     with st.spinner("Генерация ответа..."):
                         top_docs = rag.rerank(search_results, 3)
-                        response = rag.generate(user_input, top_docs)
+                        response = rag.generate(user_input, top_docs, model_name=st.session_state.llm_model,
+                                                provider=st.session_state.llm_provider)
 
                     st.markdown(response)
 

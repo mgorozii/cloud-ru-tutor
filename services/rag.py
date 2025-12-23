@@ -1,12 +1,32 @@
 import os
 
 import google.generativeai as genai
+import requests  # для вызова Ollama API
+from core.config import OLLAMA_BASE_URL, LLM_PROVIDER_GEMINI, LLM_PROVIDER_QWEN
 
 from core import get_logger
 from core.config import LLM_MODEL
 
 log = get_logger(__name__)
 
+def _call_ollama(model_name: str, system_prompt: str, user_message: str, base_url: str) -> str:
+    """Вызов локальной модели через Ollama API."""
+    url = f"{base_url}/api/chat"
+    payload = {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ],
+        "stream": False
+    }
+    try:
+        response = requests.post(url, json=payload, timeout=60)
+        response.raise_for_status()
+        result = response.json()
+        return result["message"]["content"]
+    except Exception as e:
+        return f"Ошибка Ollama: {str(e)[:200]}"
 
 class RAG:
     def __init__(self, api_key: str | None = None, model_name: str | None = None):
@@ -21,8 +41,8 @@ class RAG:
         return sorted_docs[:top_k]
 
     def generate(
-        self, query: str, documents: list[dict], model_name: str | None = None
-    ) -> str:
+        self, query: str, documents: list[dict], model_name: str | None = None, provider: str | None = None
+) -> str:
         context = "\n\n".join(
             [
                 f"Источник: {doc['metadata'].get('title', 'Без названия')}\n{doc['text']}"
@@ -30,6 +50,7 @@ class RAG:
             ]
         )
         context = context[:4000]
+        provider = provider or LLM_PROVIDER_GEMINI  # по умолчанию Gemini
         model_to_use = model_name or self.model_name
 
         system_prompt = """
@@ -68,21 +89,23 @@ class RAG:
         user_message = f"""Контекст:\n{context}\n\nВопрос: {query}"""
 
         try:
-            model = genai.GenerativeModel(model_to_use)
-            response = model.generate_content(
-                [system_prompt, user_message],
-                generation_config={"max_output_tokens": 5000, "temperature": 0.7},
-            )
-            return response.text
+            if provider == LLM_PROVIDER_QWEN:
+                # Вызов Ollama
+                response_text = _call_ollama(model_to_use, system_prompt, user_message, OLLAMA_BASE_URL)
+                return response_text
+            else:
+                # Gemini 
+                model = genai.GenerativeModel(model_to_use)
+                response = model.generate_content(
+                    [system_prompt, user_message],
+                    generation_config={"max_output_tokens": 5000, "temperature": 0.7},
+                )
+                return response.text
         except Exception as e:
             error_str = str(e)
-
             if "429" in error_str or "quota" in error_str.lower():
                 if "limit: 0" in error_str:
-                    return (
-                        f"Модель {model_to_use} недоступна. Попробуй gemini-1.5-flash."
-                    )
-                return "Лимит API исчерпан. Подожди немного."
-
-            log.error("generation_failed", model=model_to_use, error=error_str[:200])
-            return f"Ошибка генерации ({model_to_use}): {error_str[:200]}"
+                    return f"Модель {model_to_use} недоступна. Попробуй gemini-1.5-flash."
+            return "Лимит API исчерпан. Подожди немного."
+        log.error("generation_failed", model=model_to_use, error=error_str[:200])
+        return f"Ошибка генерации ({model_to_use}): {error_str[:200]}"
