@@ -11,17 +11,24 @@ JSON_OUTPUT = DATA_DIR / "documents.json"
 EMBEDDING_MODEL = "cointegrated/rubert-tiny2"
 EMBEDDING_DIM = 384
 
-LLM_MODEL = "models/gemini-3-flash-preview"
-LLM_MODEL_QWEN = "qwen2.5:7b"  # тег модели в Ollama
+# --- LLM НАСТРОЙКИ ---
 
-# Базовый URL для Ollama (по умолчанию так)
+# Провайдеры (сначала определяем константы)
+LLM_PROVIDER_GEMINI = "gemini"
+LLM_PROVIDER_QWEN = "qwen"
+
+# Модели по провайдерам
+LLM_MODEL_GEMINI = "models/gemini-3-flash-preview"
+LLM_MODEL_QWEN = "qwen2.5:7b"
+
+# Базовый URL для Ollama
 OLLAMA_BASE_URL = "http://localhost:11434"
 
-# Defolt - оставляем Gemini, чтобы ничего не сломать)
+# Значения по умолчанию (теперь можем использовать константы выше)
 LLM_DEFAULT_PROVIDER = LLM_PROVIDER_GEMINI
 LLM_DEFAULT_MODEL = LLM_MODEL_GEMINI
 
-# Для обратной совместимости с текущим RAG (пока он импортирует LLM_MODEL)
+# Для обратной совместимости с текущим RAG
 LLM_MODEL = LLM_DEFAULT_MODEL
 
 CHUNK_SIZE = 850
