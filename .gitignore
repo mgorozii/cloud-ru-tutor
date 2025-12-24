@@ -18,9 +18,11 @@ venv/
 .DS_Store
 
 # Project specific
-# чтобы не каждому скачивать заново, храним их в репозитории
+# храним documents.json и documents.db в репозитории
+data/*
 !data/documents.json
-data/
+!data/documents.db
+!data/
 
 .streamlit/secrets.toml
 .env

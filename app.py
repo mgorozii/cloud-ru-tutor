@@ -2,7 +2,13 @@
 import os
 import streamlit as st
 from core import DATABASE_FILE
-from core.config import LLM_MODEL
+from core.config import (
+    LLM_MODEL,
+    LLM_PROVIDER_GEMINI,
+    LLM_PROVIDER_QWEN,
+    LLM_MODEL_GEMINI,
+    LLM_MODEL_QWEN,
+)
 from services import EmbeddingsService, RAG, Storage
 from services.moderation import ContentModerator
 
@@ -48,68 +54,36 @@ def generate_quiz(rag, topic: str, context_docs: list):
 
     context = "\n\n".join([doc["text"] for doc in context_docs[:3]])
 
-    prompt = f"""
-    Создай 3 вопроса для самопроверки по теме: {topic}
-    
-    Контекст:
-    ```
-    {context}
-    ```
+    prompt = f"""Создай 3 вопроса с вариантами ответов по теме: {topic}
 
-    Формат ответа (ВАЖНО: используй ТОЧНО этот формат с <br> для переносов строк):
-    
-    **1. Вопрос**<br><br>
-    a) Вариант 1<br>
-    b) Вариант 2<br>
-    c) Вариант 3<br>
-    d) Вариант 4
-    
-    <details><summary>Ответ</summary>
-    
-    **Ответ:** [буква правильного ответа]
-    
-    **Объяснение:** [краткое объяснение]
-    
-    </details>
-    
-    ---
-    
-    **2. Вопрос**<br><br>
-    a) Вариант 1<br>
-    b) Вариант 2<br>
-    c) Вариант 3<br>
-    d) Вариант 4
-    
-    <details><summary>Ответ</summary>
-    
-    **Ответ:** [буква правильного ответа]
-    
-    **Объяснение:** [краткое объяснение]
-    
-    </details>
-    
-    ---
-    
-    **3. Вопрос**<br><br>
-    a) Вариант 1<br>
-    b) Вариант 2<br>
-    c) Вариант 3<br>
-    d) Вариант 4
-    
-    <details><summary>Ответ</summary>
-    
-    **Ответ:** [буква правильного ответа]
-    
-    **Объяснение:** [краткое объяснение]
-    
-    </details>
-    """
+Контекст:
+```
+{context}
+```
+
+Формат каждого вопроса:
+**N. Текст вопроса**<br>
+a) вариант<br>b) вариант<br>c) вариант<br>d) вариант
+
+<details><summary>Ответ</summary>
+
+**Ответ:** буква
+**Почему:** объяснение
+
+</details>
+
+---
+"""
 
     try:
-        response = rag.generate(prompt, [])
-        return response
+        return rag.generate(
+            prompt,
+            [],
+            model_name=st.session_state.llm_model,
+            provider=st.session_state.llm_provider,
+        )
     except Exception as e:
-        return f"Ошибка генерации вопросов: {str(e)}"
+        return f"Ошибка: {str(e)}"
 
 
 def expand_context(storage, docs: list, neighbor_count: int = 1) -> list:
@@ -146,6 +120,13 @@ def main():
 
     embeddings, collection, rag, storage, moderator = init_services()
 
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "llm_provider" not in st.session_state:
+        st.session_state.llm_provider = LLM_PROVIDER_GEMINI
+    if "llm_model" not in st.session_state:
+        st.session_state.llm_model = LLM_MODEL_GEMINI
+
     with st.sidebar:
         st.header("Настройки")
         top_k = st.slider("Количество источников", 3, 15, 5)
@@ -162,11 +143,34 @@ def main():
         st.metric("Размер вектора", embeddings.embedding_dim)
         st.metric("LLM модель", LLM_MODEL)
 
+        # === Выбор провайдера и модели ===
+        st.divider()
+        st.subheader("⚙️ Выбор LLM")
+
+        provider = st.selectbox(
+            "Провайдер",
+            [LLM_PROVIDER_GEMINI, LLM_PROVIDER_QWEN],
+            index=0 if st.session_state.llm_provider == LLM_PROVIDER_GEMINI else 1,
+        )
+
+        if provider == LLM_PROVIDER_GEMINI:
+            model_options = [
+                LLM_MODEL_GEMINI,
+                "models/gemini-1.5-flash",
+                "models/gemma-3-27b-it",
+            ]
+        else:  # Qwen
+            model_options = [LLM_MODEL_QWEN, "qwen2.5:3b", "qwen2.5:1.5b"]
+
+        selected_model = st.selectbox("Модель", model_options, index=0)
+
+        # Сохраняем выбор
+        st.session_state.llm_provider = provider
+        st.session_state.llm_model = selected_model
+
     tab1, tab2 = st.tabs(["Чат", "Самопроверка"])
 
     with tab1:
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
         if "is_generating" not in st.session_state:
             st.session_state.is_generating = False
         if "pending_question" not in st.session_state:
@@ -232,7 +236,12 @@ def main():
                     top_docs = rag.rerank(question, search_results, top_k)
                     context_docs = expand_context(storage, top_docs, neighbor_count=1)
                     response = moderator.filter_response(
-                        rag.generate(question, context_docs)
+                        rag.generate(
+                            question,
+                            context_docs,
+                            model_name=st.session_state.llm_model,
+                            provider=st.session_state.llm_provider,
+                        )
                     )
 
             sources = []

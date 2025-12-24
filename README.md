@@ -43,8 +43,36 @@ uv run python crawl.py
 # Создание эмбедингов (создает SQLite + ChromaDB)
 uv run python embeddings.py
 
-# Запуск интерфейса
-# Добавьте ваш GEMINI_API_KEY в .streamlit/secrets.toml
+# Настройка API-ключа Gemini
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+# Откройте .streamlit/secrets.toml и вставьте ваш GEMINI_API_KEY
+
+# Запуск интерфейса
 uv run streamlit run app.py
 ```
+По умолчанию используется **Gemini** (работает через API, не требует локальной установки).
+
+---
+## Использование локальной модели Qwen (опционально)
+
+Если хотите использовать **Qwen**:
+
+### Установите Ollama
+- **Windows/Mac/Linux**: [ollama.com](https://ollama.com/download)
+
+### Запустите Ollama (если не запустилась автоматически)
+```bash
+ollama serve
+```
+
+### Скачайте модель Qwen
+```bash
+ollama pull qwen2.5:7b
+ollama list  # проверка
+```
+
+### Выбор модели в UI
+После запуска Streamlit (`uv run streamlit run app.py`):
+- В боковой панели найдите **"⚙️ Выбор LLM"**
+- Переключите провайдер с `gemini` на `qwen`
+- Выберите модель `qwen2.5:7b`

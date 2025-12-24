@@ -11,9 +11,22 @@ JSON_OUTPUT = DATA_DIR / "documents.json"
 EMBEDDING_MODEL = "cointegrated/rubert-tiny2"
 EMBEDDING_DIM = 384
 
-LLM_MODEL = "models/gemini-3-flash-preview"
-LLM_MODEL = "models/gemma-3-27b-it"
+# LLM providers
+LLM_PROVIDER_GEMINI = "gemini"
+LLM_PROVIDER_QWEN = "qwen"
+
+# models
+LLM_MODEL_GEMINI = "models/gemini-3-flash-preview"
+LLM_MODEL_QWEN = "qwen2.5:7b"
 LLM_RERANK_MODEL = "models/gemma-3-27b-it"
+
+# Ollama
+OLLAMA_BASE_URL = "http://localhost:11434"
+
+# defaults
+LLM_DEFAULT_PROVIDER = LLM_PROVIDER_GEMINI
+LLM_DEFAULT_MODEL = LLM_MODEL_GEMINI
+LLM_MODEL = LLM_DEFAULT_MODEL
 
 CHUNK_SIZE = 512
 CHUNK_OVERLAP = 100
