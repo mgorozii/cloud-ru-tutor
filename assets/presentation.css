@@ -1,0 +1,57 @@
+/* кастомные стили для презентации */
+
+.reveal h1 {
+  font-size: 1.8em !important;
+}
+
+.reveal h2 {
+  font-size: 1.4em !important;
+}
+
+.reveal h3 {
+  font-size: 1.1em !important;
+}
+
+.reveal p,
+.reveal li,
+.reveal td,
+.reveal th {
+  font-size: 0.75em !important;
+}
+
+.reveal pre {
+  font-size: 0.6em !important;
+}
+
+.reveal code {
+  font-size: 0.9em !important;
+}
+
+.reveal img {
+  max-height: 60vh !important;
+}
+
+/* таблицы компактнее */
+.reveal table {
+  font-size: 0.7em !important;
+}
+
+.reveal th,
+.reveal td {
+  padding: 0.3em 0.5em !important;
+}
+
+/* колонки */
+.columns {
+  display: flex !important;
+  gap: 1em;
+}
+
+.column {
+  flex: 1;
+}
+
+/* speaker notes не показываем в обычном режиме */
+.notes {
+  display: none;
+}

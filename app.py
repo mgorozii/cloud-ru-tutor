@@ -3,7 +3,6 @@ import os
 import streamlit as st
 from core import DATABASE_FILE
 from core.config import (
-    LLM_MODEL,
     LLM_PROVIDER_GEMINI,
     LLM_PROVIDER_QWEN,
     LLM_MODEL_GEMINI,
@@ -63,15 +62,15 @@ def generate_quiz(rag, topic: str, context_docs: list):
 
 Формат каждого вопроса:
 **N. Текст вопроса**<br>
-a) вариант<br>b) вариант<br>c) вариант<br>d) вариант
+a) вариант<br><br>b) вариант<br><br>c) вариант<br><br>d) вариант
 
 <details><summary>Ответ</summary>
 
-**Ответ:** буква
+**Ответ:** буква<br><br>
 **Почему:** объяснение
 
 </details>
-
+<br><br>
 ---
 """
 
@@ -141,7 +140,6 @@ def main():
             st.metric("Чанков в БД", "N/A")
 
         st.metric("Размер вектора", embeddings.embedding_dim)
-        st.metric("LLM модель", LLM_MODEL)
 
         # === Выбор провайдера и модели ===
         st.divider()

@@ -34,21 +34,21 @@ cloud-ru-tutor/
 Для работы понадобится Python 3.11+, [uv](https://docs.astral.sh/uv/) и [GEMINI_API_KEY](https://aistudio.google.com/app/api-keys).
 
 ```bash
-# Установка
-uv sync
+# Установка зависимостей
+make install
 
 # Парсинг документации (опционально)
-uv run python crawl.py
+make crawl
 
-# Создание эмбедингов (создает SQLite + ChromaDB)
-uv run python embeddings.py
+# Создание эмбеддингов (SQLite + ChromaDB)
+make index
 
 # Настройка API-ключа Gemini
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 # Откройте .streamlit/secrets.toml и вставьте ваш GEMINI_API_KEY
 
 # Запуск интерфейса
-uv run streamlit run app.py
+make run
 ```
 По умолчанию используется **Gemini** (работает через API, не требует локальной установки).
 

@@ -1,0 +1,56 @@
+@startuml architecture
+skinparam backgroundColor white
+skinparam defaultFontName Noto Sans
+skinparam rectangleBorderColor #666666
+skinparam packageBorderColor #999999
+
+' external sources
+package "External Sources" as ext #DDDDDD {
+  rectangle "Cloud.ru Docs" as docs #E0E0E0
+  rectangle "Gemini API" as gemini #E0E0E0
+  rectangle "Ollama/Qwen" as ollama #E0E0E0
+}
+
+' ui layer
+package "UI Layer (Streamlit)" as ui #D6EAF8 {
+  rectangle "Chat Tab" as chat #85C1E9
+  rectangle "Quiz Tab" as quiz #85C1E9
+  rectangle "LLM Selector" as llm_sel #85C1E9
+}
+
+' services layer
+package "Services Layer" as svc #D5F5E3 {
+  rectangle "Crawler Service" as crawler #58D68D
+  rectangle "Embeddings Service" as emb #58D68D
+  rectangle "RAG Service" as rag #58D68D
+  rectangle "Storage Service" as storage #58D68D
+  rectangle "Moderation" as mod #58D68D
+}
+
+' data layer
+package "Data Layer" as data #FCF3CF {
+  rectangle "documents.db" as db #F7DC6F
+  rectangle "documents.json" as json #F7DC6F
+  rectangle "chroma_db" as chroma #F7DC6F
+}
+
+' connections
+docs --> crawler
+crawler --> storage
+storage --> db
+storage --> json
+
+gemini --> rag
+ollama --> rag
+
+chat --> mod
+quiz --> mod
+mod --> emb
+mod --> rag
+llm_sel --> rag
+
+emb --> chroma
+rag --> chroma
+rag --> emb
+
+@enduml
